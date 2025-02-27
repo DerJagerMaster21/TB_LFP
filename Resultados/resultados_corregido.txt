@@ -1,0 +1,34 @@
+		(1)	(2)
+VARIABLES	LABELS	Modelo Base Drop	Modelo Robusto Drop
+			
+Educacion	Anhos de educacion	-0.0398***	-0.0398***
+		(0.0116)	(0.0122)
+Educacion_pareja	Anhos de educacion de la pareja	-0.0446***	-0.0446***
+		(0.0127)	(0.0142)
+Edad	Edad actual - entrevistada	-0.0284***	-0.0284***
+		(0.00483)	(0.00474)
+Numero_hijos	Cantidad de hijos de la entrevistada	0.108***	0.108***
+		(0.0368)	(0.0394)
+2.Estado_civil	Estado civil actual = 2, Viviendo juntos	0.103	0.103
+		(0.103)	(0.0920)
+3.Estado_civil	Estado civil actual = 3, Viuda	-0.583	-0.583
+		(1.412)	(0.500)
+4.Estado_civil	Estado civil actual = 4, Divorciada	0.536	0.536
+		(1.001)	(1.170)
+5.Estado_civil	Estado civil actual = 5, No viven juntos	0.824***	0.824***
+		(0.117)	(0.114)
+1.Zona	Zona de residencia = 1, Zona Urbana	0.00578	0.00578
+		(0.0862)	(0.0898)
+2.Region	Region Natural = 2, Sierra	0.237***	0.237***
+		(0.0869)	(0.0850)
+3.Region	Region Natural = 3, Selva	0.228**	0.228**
+		(0.0923)	(0.0929)
+1.Consumo_alcohol	¿Su pareja consume bebidas alcoholicas? = 1, Si	0.484***	0.484***
+		(0.105)	(0.0896)
+Constant	Constant	3.439***	3.439***
+		(0.279)	(0.267)
+			
+Observations		3,310	3,310
+R-squared		0.060	0.060
+Standard errors in parentheses			
+*** p<0.01, ** p<0.05, * p<0.1			

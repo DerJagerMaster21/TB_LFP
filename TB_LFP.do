@@ -13,83 +13,86 @@ cls
 global data cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Data"
 global result cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Resultados"
 
-// Descargar y descomprimir módulos para cada año
-local modules "1631 1632 1635 1637"	// Módulos seleccionados
-
-// Descarga de las módulos
-
-foreach m in `modules'{
-	$data
-	qui copy https://proyectos.inei.gob.pe/iinei/srienaho/descarga/STATA/910-Modulo`m'.zip 910-Modulo`m'.zip, replace
-	qui unzipfile 910-Modulo`m'.zip, replace
-}
-
-disp "Descarga y extracción completada de los módulos: `modules' para el año 2023."
-
-// Año 2023: ENDES
-qui global mod910_1631 cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Data\910-Modulo1631"
-qui global mod910_1632 cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Data\910-Modulo1632"
-qui global mod910_1635 cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Data\910-Modulo1635"
-qui global mod910_1637 cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Data\910-Modulo1637"
-
-**# 2. LIMPIEZA DE MÓDULOS
-
-*************************************
-* Módulo 1631: Datos básicos de MEF *
-*************************************
-
-$mod910_1631
-* Base "REC91" con información de las mujeres, y algunas variables de salud materno-infantil
-use "REC91_2023.dta", clear
-rename *,lower
-save, replace
-
-* Base "REC0111" con información resumen de los hogares de las mujeres seleccionadas
-use "REC0111_2023.dta", clear
-rename *,lower
-save, replace
-
-******************************************************
-* Módulo 1632: Nacimientos y conocimiento de métodos *
-******************************************************
-
-$mod910_1632
-* Base RE223132 con información de fecundidad de la mujer:
-use "RE223132_2023.dta",clear
-rename *,lower
-save , replace
-
-******************************************
-* Módulo 1635: Nupcialidad y fecundidad **
-******************************************
-
-$mod910_1635
-* Base RE516171 con información sobre cuidado y uso de métodos anticonceptivos
-use "RE516171_2023.dta",clear
-rename *,lower
-save, replace
-
-
-*********************************************************
-* Módulo 1637: Mortalidad materna y violencia familiar **
-*********************************************************
-
-$mod910_1637
-* Base REC84DV con información sobre violencia familiar
-use "REC84DV_2023.dta",clear
-rename *,lower
-save, replace
-
-**# 3. UNIÓN DE BASES DE DATOS
-
-$mod910_1631
-use "REC0111_2023.dta", clear
-merge 1:1 caseid using "REC91_2023.dta",nogen keepusing(sregion)
-$mod910_1632
-merge 1:1 caseid using "RE223132_2023.dta", nogen keepusing(v202)
-$mod910_1635
-merge 1:1 caseid using "RE516171_2023.dta",nogen keepusing(v501 v715)
-$mod910_1637
-merge 1:1 caseid using "REC84DV_2023.dta", nogen keepusing(d103a d103b d103d d105a-d105g d105h-d105i d109 d113)
 $result
-save "BD_LFP.dta", replace
+use "BD_LFP.dta", clear
+
+**# 1. Estimación por MCO
+	reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
+	estimates store modelo1
+	
+
+	outreg2 using resultados_finales.doc, replace ctitle(Modelo Base) label
+
+**# 2. Pruebas econométricas	
+	// Test de Multicolinealidad
+	estat vif
+	
+	// Test de Variables Omitidas
+	ovtest
+	
+	// Test de Heterocedasticidad
+	qui reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
+	gen n=_n
+	predict resid, residuals
+	*line resid n
+	gen resid2=resid^2
+	line resid2 n
+	graph export "G2 Hetero.png", as(png) name("Graph") replace
+	
+	qui reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
+	predict y_est, xb
+	scatter resid2 y_est
+	graph export "G1 Hetero.png", as(png) name("Graph") replace
+	
+	estat imtest, white
+	estat hettest, rhs
+	*p-value < 0.05, entonces se rechaza la H0, existe problema de Heterocedasticidad
+	
+**# 3. Correción de Heterocedasticidad
+	
+
+	use "BD_LFP.dta", clear
+	
+	reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol, vce (robust)
+	estimates store modelo2
+	
+
+	outreg2 using resultados_finales.doc, append ctitle(Modelo Robusto) label
+
+**# 4. Modelo Significativo (solo variables significativas)
+
+	*clear
+	*set more off
+	*cls
+	
+	use "BD_LFP.dta", clear
+		
+	// Dropeo de variables
+	drop if Violencia == 0
+	
+	reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
+	estimates store modelo_1
+	
+	outreg2 using resultados_corregido.doc, replace ctitle(Modelo Base Drop) label
+
+	estat imtest, white
+	
+	// Heterocedasticidad Corregida
+	
+	reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol, vce (robust)
+	estimates store modelo_2
+
+	outreg2 using resultados_corregido.doc, append ctitle(Modelo Robusto Drop) label
+	
+	*esttab mco_sin_factor mco_con_factor, title("Comparación de Estimaciones")
+	*estimates stats mco_sin_factor mco_con_factor
+
+
+**# 5. Modelo Adicional
+/*
+	svyset id_persona [pw=factora07]
+	svy: reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
+	estimates store modelo3
+	$result
+	outreg2 using resultados_finales.doc, append ctitle(Modelo con Factor) label
+*/	

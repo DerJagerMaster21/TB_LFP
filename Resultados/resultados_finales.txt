@@ -1,0 +1,34 @@
+		(1)	(2)
+VARIABLES	LABELS	Modelo Base	Modelo Robusto
+			
+Educacion	Anhos de educacion	-0.0119***	-0.0119***
+		(0.00291)	(0.00317)
+Educacion_pareja	Anhos de educacion de la pareja	-0.0195***	-0.0195***
+		(0.00322)	(0.00371)
+Edad	Edad actual - entrevistada	-0.00790***	-0.00790***
+		(0.00118)	(0.00119)
+Numero_hijos	Cantidad de hijos de la entrevistada	0.0381***	0.0381***
+		(0.00938)	(0.0101)
+2.Estado_civil	Estado civil actual = 2, Viviendo juntos	0.0676***	0.0676***
+		(0.0223)	(0.0181)
+3.Estado_civil	Estado civil actual = 3, Viuda	-0.210	-0.210***
+		(0.179)	(0.0537)
+4.Estado_civil	Estado civil actual = 4, Divorciada	0.133	0.133
+		(0.193)	(0.157)
+5.Estado_civil	Estado civil actual = 5, No viven juntos	0.467***	0.467***
+		(0.0289)	(0.0334)
+1.Zona	Zona de residencia = 1, Zona Urbana	-0.0644***	-0.0644***
+		(0.0216)	(0.0230)
+2.Region	Region Natural = 2, Sierra	0.0724***	0.0724***
+		(0.0217)	(0.0217)
+3.Region	Region Natural = 3, Selva	0.0365	0.0365
+		(0.0226)	(0.0227)
+1.Consumo_alcohol	¿Su pareja consume bebidas alcoholicas? = 1, Si	0.177***	0.177***
+		(0.0228)	(0.0181)
+Constant	Constant	0.692***	0.692***
+		(0.0648)	(0.0631)
+			
+Observations		20,918	20,918
+R-squared		0.027	0.027
+Standard errors in parentheses			
+*** p<0.01, ** p<0.05, * p<0.1			
