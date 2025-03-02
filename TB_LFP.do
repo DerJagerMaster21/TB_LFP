@@ -16,14 +16,19 @@ global result cd "C:\Users\ecoja\Escritorio\TB_Metria\TB_LFP\Resultados"
 $result
 use "BD_LFP.dta", clear
 
+// Histograma de Violencia
+histogram Violencia, frequency title("Histograma de Violencia") xtitle("Cant. incidentes de violencia") ytitle("Frecuencia") width(5) normal
+
+graph export "Histograma_Violencia.png", as(png) name("Graph") replace
+
 **# 1. Estimación por MCO
 	reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
 	estimates store modelo1
 	
-
 	outreg2 using resultados_finales.doc, replace ctitle(Modelo Base) label
 
-**# 2. Pruebas econométricas	
+**# 2. Pruebas econométricas
+
 	// Test de Multicolinealidad
 	estat vif
 	
@@ -34,15 +39,24 @@ use "BD_LFP.dta", clear
 	qui reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
 	gen n=_n
 	predict resid, residuals
-	*line resid n
 	gen resid2=resid^2
-	line resid2 n
-	graph export "G2 Hetero.png", as(png) name("Graph") replace
+	
+	// Gráfico de residuos al cuadrado vs. número de observación
+	twoway (line resid2 n, lcolor(blue) lwidth(medium)), ///
+		title("Residuos al Cuadrado vs. Número de Observación") ///
+		xtitle("Número de Observación") ///
+		ytitle("Residuos al Cuadrado")
+	graph export "G2_Hetero.png", as(png) name("Graph") replace
 	
 	qui reg Violencia Educacion Educacion_pareja Edad Numero_hijos i.Estado_civil i.Zona i.Region i.Consumo_alcohol
 	predict y_est, xb
-	scatter resid2 y_est
-	graph export "G1 Hetero.png", as(png) name("Graph") replace
+	
+	// Gráfico de residuos al cuadrado vs. valores ajustados
+	twoway (scatter resid2 y_est, mcolor(red) msymbol(circle)), ///
+		title("Residuos al Cuadrado vs. Valores Ajustados") ///
+		xtitle("Valores Ajustados") ///
+		ytitle("Residuos al Cuadrado")
+	graph export "G1_Hetero.png", as(png) name("Graph") replace
 	
 	estat imtest, white
 	estat hettest, rhs

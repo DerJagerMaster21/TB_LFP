@@ -114,7 +114,7 @@ recode `x' (0 3=0) (1/2=1)
 }
 egen Violencia=rowtotal(d103a-d105i) if d103a!=.
 
-lab var Violencia "Cantidad de incidente de violencia hacia la mujer"
+lab var Violencia "Cantidad de incidentes de violencia hacia la mujer"
 
 * drop if Violencia == 0
 
